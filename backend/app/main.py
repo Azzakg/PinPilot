@@ -1,4 +1,4 @@
-
+import os
 from fastapi import FastAPI, HTTPException
 from pathlib import Path
 import json
@@ -12,7 +12,7 @@ from engines.firmware_gen import generate_platformio_project
 
 APP_NAME = "PinPilot"
 DATA_DIR = Path("data")
-OUTPUTS_DIR = Path("../outputs")  # outputs folder at repo root (../outputs from backend/)
+OUTPUTS_DIR = Path(os.getenv("PINPILOT_OUTPUTS_DIR", "../outputs"))  # outputs folder at repo root (../outputs from backend/)
 
 app = FastAPI(
     title=APP_NAME,
