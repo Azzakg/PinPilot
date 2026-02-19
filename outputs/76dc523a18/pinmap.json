@@ -1,0 +1,63 @@
+{
+  "project_id": "76dc523a18",
+  "device_name": "smart_shelf_tag",
+  "intent": {
+    "device_name": "smart_shelf_tag",
+    "board": "esp32c3",
+    "peripherals": [
+      {
+        "id": "epaper_spi_2p13",
+        "alias": null
+      },
+      {
+        "id": "bme280_i2c",
+        "alias": null
+      }
+    ],
+    "power": {
+      "source": "battery",
+      "voltage": 3.7,
+      "deep_sleep_required": true
+    },
+    "connectivity": {
+      "type": "wifi",
+      "protocol": "mqtt"
+    },
+    "reserve_usb_serial_jtag": true,
+    "strict_avoid_boot_pins": true
+  },
+  "pinmap": {
+    "board_id": "esp32-c3",
+    "board_name": "ESP32-C3 (generic chip profile)",
+    "peripherals": [
+      "epaper_spi_2p13",
+      "bme280_i2c"
+    ],
+    "assignments": {
+      "epaper_spi_2p13.SCLK": 4,
+      "epaper_spi_2p13.MOSI": 5,
+      "bme280_i2c.SCL": 10,
+      "bme280_i2c.SDA": 6,
+      "epaper_spi_2p13.CS": 3,
+      "epaper_spi_2p13.DC": 7,
+      "epaper_spi_2p13.RST": 20,
+      "epaper_spi_2p13.BUSY": 21
+    },
+    "rationale": {
+      "epaper_spi_2p13.SCLK": "preferred_free_pin;recommended_for_spi_sclk",
+      "epaper_spi_2p13.MOSI": "preferred_free_pin;recommended_for_spi_mosi",
+      "bme280_i2c.SCL": "preferred_free_pin;recommended_for_i2c_scl",
+      "bme280_i2c.SDA": "preferred_free_pin;recommended_for_i2c_sda",
+      "epaper_spi_2p13.CS": "preferred_free_pin",
+      "epaper_spi_2p13.DC": "preferred_free_pin",
+      "epaper_spi_2p13.RST": "preferred_free_pin",
+      "epaper_spi_2p13.BUSY": "preferred_free_pin"
+    },
+    "warnings": [],
+    "options": {
+      "reserve_usb_serial_jtag": true,
+      "strict_avoid_boot_pins": true
+    }
+  },
+  "generated_utc": "2026-02-19T18:53:46.941080+00:00"
+}

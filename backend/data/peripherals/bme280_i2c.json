@@ -1,0 +1,19 @@
+{
+  "id": "bme280_i2c",
+  "name": "BME280 (I2C)",
+  "category": "sensor",
+  "bus": "i2c",
+  "voltage": { "logic_v": 3.3, "power_v": 3.3 },
+  "pins": [
+    { "role": "SCL", "dir": "out", "required": true, "bus_role": "i2c_scl" },
+    { "role": "SDA", "dir": "inout", "required": true, "bus_role": "i2c_sda" }
+  ],
+  "power_pins": [
+    { "role": "VCC", "required": true, "net": "3V3" },
+    { "role": "GND", "required": true, "net": "GND" }
+  ],
+  "constraints": {
+    "requires_pullups": true,
+    "pullup_value_ohms": 4700
+  }
+}

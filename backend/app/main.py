@@ -1,20 +1,23 @@
+
 from fastapi import FastAPI, HTTPException
 from pathlib import Path
 import json
 import uuid
 from datetime import datetime, timezone
+import shutil
 
 from app.models import HardwareIntent
 from engines.pinmapper import generate_pinmap
+from engines.firmware_gen import generate_platformio_project
 
 APP_NAME = "PinPilot"
 DATA_DIR = Path("data")
-OUTPUTS_DIR = Path("../outputs")  # outputs folder at repo root
+OUTPUTS_DIR = Path("../outputs")  # outputs folder at repo root (../outputs from backend/)
 
 app = FastAPI(
     title=APP_NAME,
     version="0.1.0",
-    description="PinPilot MVP API — Hardware Intent → Pinout Mapping"
+    description="PinPilot MVP API — Hardware Intent → Pinout Mapping → Firmware Bundle"
 )
 
 
@@ -71,8 +74,11 @@ def get_peripheral(peripheral_id: str):
 @app.post("/generate/pinmap")
 def generate_pinmap_endpoint(intent: HardwareIntent):
     """
-    Generate a pinmap based on the user's hardware intent.
-    Saves output to /outputs/<project_id>/pinmap.json and returns JSON.
+    Generates:
+      1) pinmap.json
+      2) firmware/ (PlatformIO project)
+      3) pinpilot_bundle.zip (pinmap + firmware)
+    Saved under: outputs/<project_id>/
     """
     # Validate board profile exists
     board_path = DATA_DIR / "boards" / f"{intent.board}.json"
@@ -87,14 +93,14 @@ def generate_pinmap_endpoint(intent: HardwareIntent):
             raise HTTPException(status_code=400, detail=f"Unknown peripheral: {p.id}")
         peripheral_paths.append(str(per_path))
 
-    # Generate project id
+    # Generate project id and output folder
     project_id = uuid.uuid4().hex[:10]
     project_dir = OUTPUTS_DIR / project_id
     project_dir.mkdir(parents=True, exist_ok=True)
 
     # Run pin mapper
     try:
-        result = generate_pinmap(
+        pinmap_result = generate_pinmap(
             board_profile_path=str(board_path),
             peripheral_profile_paths=peripheral_paths,
             reserve_usb_serial_jtag=intent.reserve_usb_serial_jtag,
@@ -103,17 +109,39 @@ def generate_pinmap_endpoint(intent: HardwareIntent):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Pin mapping failed: {str(e)}")
 
-    # Attach metadata
+    # Full payload (saved + returned)
     payload = {
         "project_id": project_id,
         "device_name": intent.device_name,
         "intent": intent.model_dump(),
-        "pinmap": result,
+        "pinmap": pinmap_result,
         "generated_utc": datetime.now(timezone.utc).isoformat()
     }
 
-    # Save artifact
+    # Save pinmap.json
     with open(project_dir / "pinmap.json", "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
+
+    # Generate firmware project
+    try:
+        generate_platformio_project(
+            templates_dir=Path("templates"),
+            project_dir=project_dir,
+            pinmap_payload=payload,
+            device_name=intent.device_name,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Firmware generation failed: {str(e)}")
+
+    # Create ZIP bundle (pinmap + firmware)
+    try:
+        zip_path = shutil.make_archive(
+            base_name=str(project_dir / "pinpilot_bundle"),
+            format="zip",
+            root_dir=str(project_dir),
+        )
+        payload["bundle_zip"] = str(Path(zip_path).resolve())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"ZIP bundle failed: {str(e)}")
 
     return payload
