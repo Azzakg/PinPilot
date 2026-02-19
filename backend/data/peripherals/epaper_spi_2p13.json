@@ -1,0 +1,37 @@
+{
+  "id": "epaper_spi_2p13",
+  "name": "2.13in e-paper (SPI)",
+  "category": "display",
+  "bus": "spi",
+  "voltage": {
+    "logic_v": 3.3,
+    "power_v": 3.3,
+    "notes": "Most ESP32 e-paper modules use 3.3V logic. Verify your specific panel/driver board."
+  },
+  "pins": [
+    { "role": "SCLK", "dir": "out", "required": true, "bus_role": "spi_sclk" },
+    { "role": "MOSI", "dir": "out", "required": true, "bus_role": "spi_mosi" },
+    { "role": "MISO", "dir": "in",  "required": false, "bus_role": "spi_miso", "notes": "Many e-paper modules do not use MISO." },
+
+    { "role": "CS",   "dir": "out", "required": true, "active": "low", "notes": "Chip select." },
+    { "role": "DC",   "dir": "out", "required": true, "notes": "Data/Command select." },
+    { "role": "RST",  "dir": "out", "required": true, "active": "low", "notes": "Reset." },
+    { "role": "BUSY", "dir": "in",  "required": true, "active": "high", "notes": "Busy/status from display." }
+  ],
+  "power_pins": [
+    { "role": "VCC", "required": true, "net": "3V3" },
+    { "role": "GND", "required": true, "net": "GND" }
+  ],
+  "constraints": {
+    "needs_interrupt_capable_pin_for": ["BUSY"],
+    "avoid_strapping_pins_for": ["CS", "RST"],
+    "notes": [
+      "BUSY can be polled, but using an interrupt-capable GPIO is preferred.",
+      "Keep RST away from boot strapping pins to avoid reset/boot conflicts."
+    ]
+  },
+  "recommended_libraries": [
+    { "framework": "arduino", "name": "GxEPD2" },
+    { "framework": "esp-idf", "name": "epaper-driver (varies)" }
+  ]
+}

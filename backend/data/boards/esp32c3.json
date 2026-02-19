@@ -1,0 +1,59 @@
+{
+  "id": "esp32-c3",
+  "name": "ESP32-C3 (generic chip profile)",
+  "gpio_range": { "min": 0, "max": 21 },
+
+  "strapping_pins": {
+    "pins": [2, 8, 9],
+    "notes": {
+      "gpio2": "Strapping pin (boot mode influence). Avoid external circuits that force level at reset.",
+      "gpio8": "Strapping pin. Certain boot/download behaviors depend on it; avoid pulling low at reset.",
+      "gpio9": "Strapping pin with internal pull-up on many boards; avoid forcing low at reset unless you mean to enter download mode."
+    }
+  },
+
+  "reserved_or_special": {
+    "usb_serial_jtag": [18, 19],
+    "jtag_default": [4, 5, 6, 7],
+    "uart0_default": [20, 21],
+    "notes": {
+      "usb_serial_jtag": "If your board uses native USB Serial/JTAG, prefer not to reassign GPIO18/19.",
+      "jtag_default": "Often used for JTAG in some configs/boards; you may reuse, but be cautious during debugging.",
+      "uart0_default": "Often used for UART0 (logs/bootloader). Can be remapped, but keep a safe default for flashing/debug."
+    }
+  },
+
+  "capabilities": {
+    "spi_matrix_routable": true,
+    "i2c_matrix_routable": true,
+    "uart_matrix_routable": true,
+    "gpio_matrix_note": "Peripherals can be routed through IO MUX/GPIO matrix; PinPilot still chooses safe/recommended pins."
+  },
+
+  "recommendations": {
+    "spi_recommended": {
+      "SCLK": [4, 6, 10],
+      "MOSI": [5, 7, 18],
+      "MISO": [3, 19],
+      "CS": [2, 8, 9, 10]
+    },
+    "i2c_recommended": {
+      "SDA": [4, 5, 6, 7],
+      "SCL": [8, 9, 10, 18, 19]
+    },
+    "uart_recommended": {
+      "TX": [21, 7, 6],
+      "RX": [20, 3, 4]
+    }
+  },
+
+  "pin_risk_rules": {
+    "avoid_at_boot_if_possible": [2, 8, 9],
+    "prefer_free_pins_first": [3, 4, 5, 6, 7, 10, 18, 19, 20, 21],
+    "notes": [
+      "Strapping pins should not be forced to conflicting levels during reset.",
+      "If using native USB Serial/JTAG, treat GPIO18/19 as reserved.",
+      "Keep UART0 pins available (20/21) in early prototypes to simplify flashing/logging."
+    ]
+  }
+}
